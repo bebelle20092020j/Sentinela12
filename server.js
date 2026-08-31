@@ -23,10 +23,26 @@ function readDB() {
       tv_historico: []
     };
   }
-  const db = JSON.parse(fs.readFileSync(DB_FILE));
-  if (!db.tv_chamada) db.tv_chamada = null;
-  if (!db.tv_historico) db.tv_historico = [];
-  return db;
+
+  try {
+    const db = JSON.parse(fs.readFileSync(DB_FILE, "utf8"));
+
+    if (!db.tv_chamada) db.tv_chamada = null;
+    if (!db.tv_historico) db.tv_historico = [];
+
+    return db;
+  } catch (error) {
+    console.error("Erro ao ler db.json:", error);
+
+    return {
+      usuarios: [],
+      pacientes: [],
+      triagens: [],
+      consultas: [],
+      tv_chamada: null,
+      tv_historico: []
+    };
+  }
 }
 
 function writeDB(data) {
@@ -68,7 +84,7 @@ app.post("/atendimento", (req, res) => {
   res.json(paciente);
 });
 
-// LISTAR PACIENTES (triagem busca quem foi cadastrado no atendimento)
+// LISTAR PACIENTES
 app.get("/pacientes", (req, res) => {
   const db = readDB();
   res.json(db.pacientes);
@@ -114,8 +130,6 @@ app.get("/triagens", (req, res) => {
 
 // ============ MÍDIA INDOOR - TV ============
 
-// Função criada para enviar a chamada do paciente para a tela da TV.
-// Serve para triagem chamar o paciente no guichê e para o médico chamar no consultório.
 app.post("/tv/chamar", (req, res) => {
   const db = readDB();
 
@@ -124,21 +138,26 @@ app.post("/tv/chamar", (req, res) => {
     localTipo: req.body.localTipo,
     localNumero: req.body.localNumero,
     paciente: req.body.paciente,
-    hora: new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
+    hora: new Date().toLocaleTimeString("pt-BR", {
+      hour: "2-digit",
+      minute: "2-digit"
+    })
   };
 
   db.tv_chamada = chamada;
   db.tv_historico.unshift(chamada);
-  if (db.tv_historico.length > 5) db.tv_historico.pop();
+
+  if (db.tv_historico.length > 5) {
+    db.tv_historico.pop();
+  }
 
   writeDB(db);
   res.json(chamada);
 });
 
-// Função criada para consultar a chamada atual e o histórico que será exibido na TV.
-// Essa rota é usada para atualizar a tela automaticamente a cada poucos segundos.
 app.get("/tv/chamada", (req, res) => {
   const db = readDB();
+
   res.json({
     chamada: db.tv_chamada,
     historico: db.tv_historico
@@ -186,7 +205,10 @@ app.get("/medicacoes", (req, res) => {
   res.json(db.consultas);
 });
 
-// START
+// START - Render
 const PORT = Number(process.env.PORT) || 3000;
-const HOST = '0.0.0.0'; app.listen(PORT, HOST, () => 
-  { console.log(`Servidor rodando em http://${HOST}:${PORT}`); });
+const HOST = "0.0.0.0";
+
+app.listen(PORT, HOST, () => {
+  console.log(`Servidor rodando em http://${HOST}:${PORT}`);
+});
