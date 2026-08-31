@@ -206,9 +206,10 @@ app.get("/medicacoes", (req, res) => {
 });
 
 // START - Render
-const PORT = Number(process.env.PORT) || 3000;
-const HOST = "0.0.0.0";
-
-app.listen(PORT, HOST, () => {
-  console.log(`Servidor rodando em http://${HOST}:${PORT}`);
+const PORT= process.env.PORT
+!!3000;
+app.listem(PORT, () = {
+  console.log(`Porta ${PORT}`);
+});
+  
 });
