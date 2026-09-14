@@ -206,10 +206,9 @@ app.get("/medicacoes", (req, res) => {
 });
 
 // START - Render
-const PORT= process.env.PORT
-!!3000;
-app.listem(PORT, () = {
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
   console.log(`Porta ${PORT}`);
 });
-  
-});
+
